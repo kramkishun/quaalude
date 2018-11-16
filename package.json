@@ -1,0 +1,14 @@
+{
+  "name": "quaalude",
+  "version": "1.0.0",
+  "description": "Backend for Financial data analysis app",
+  "main": "quaalude.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "kr",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.16.4"
+  }
+}
