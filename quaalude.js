@@ -37,4 +37,25 @@ app.get('/tsdata/:sym', (req, res) => {
   })(req.params.sym, res));
 });
 
+// BUG: any kind of unexpected response (e.g. HTML) causes crashes.
+
+app.get('/multitsdata', (req, res) => {
+  console.log ('Multi Symbol Request')
+
+  const pickleRisk = 'http://localhost:5000/multihistory?symbols=' + req.query.symbols;
+
+  request(pickleRisk, ((symbols, responseObj) => {
+    return (pErr, pReq, pBody) => {
+      if (pErr) {
+        console.log (pErr);
+        console.log ("Could not retrieve data from pickleRisk for: " + symbols);
+        return;
+      }
+
+      console.log('Received multidata from pickleRisk for ' + symbols);
+      responseObj.json(JSON.parse(pBody))
+    }
+  })(req.query.symbols, res));
+});
+
 app.listen(port, () => console.log(`Quaalude launched on port ${port}!`));
