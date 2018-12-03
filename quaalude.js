@@ -16,11 +16,14 @@ app.use(function(req, res, next) {
 
 app.get('/', (req, res) => res.send('Check out /tsdata'));
 
+// TODO: very repetitive from when proving out - refactor to remove duplicate code
+
 // Right now just serving as a pass through
 app.get('/tsdata/:sym', (req, res) => {
 
   const pickleRisk = 'http://localhost:5000/history/' + req.params.sym;
 
+  // TODO: replace with fetch or axios - this pattern is terrible for readability.
   request(pickleRisk, ((symbol, responseObj) => {
     return (pErr, pReq, pBody) => {
       if (pErr) {
@@ -56,6 +59,25 @@ app.get('/multitsdata', (req, res) => {
       responseObj.json(JSON.parse(pBody))
     }
   })(req.query.symbols, res));
+});
+
+app.get('/returndata/:sym', (req, res) => {
+  console.log ('Return Request')
+
+  const pickleRisk = 'http://localhost:5000/returns/' + req.params.sym;
+
+  request(pickleRisk, ((symbols, responseObj) => {
+    return (pErr, pReq, pBody) => {
+      if (pErr) {
+        console.log (pErr);
+        console.log ("Could not retrieve return data from pickleRisk for: " + symbols);
+        return;
+      }
+
+      console.log('Received return from pickleRisk for ' + symbols);
+      responseObj.json(JSON.parse(pBody))
+    }
+  })(req.params.sym, res));
 });
 
 app.listen(port, () => console.log(`Quaalude launched on port ${port}!`));
