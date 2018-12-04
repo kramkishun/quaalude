@@ -72,13 +72,13 @@ module.exports = function(app, passport) {
     app.get('/signup', function(req, res) {
 
         // render the page and pass in any flash data if it exists
-        res.render('signup.ejs', { message: req.flash('signupMessage') });
+        //res.render('signup.ejs', { message: req.flash('signupMessage') });
     });
 
     // process the signup form
     app.post('/signup', passport.authenticate('local-signup', {
-        successRedirect : '/profile', // redirect to the secure profile section
-        failureRedirect : '/signup', // redirect back to the signup page if there is an error
+        successRedirect : 'http://localhost:3002/', // redirect to the secure profile section
+        failureRedirect : 'http://localhost:3002/', // redirect back to the signup page if there is an error
         failureFlash : true // allow flash messages
     }));
 
@@ -100,6 +100,14 @@ module.exports = function(app, passport) {
         req.logout();
         res.redirect('/');
     });
+
+
+    // process the login form
+    app.post('/login', passport.authenticate('local-login', {
+        successRedirect : '/profile', // redirect to the secure profile section
+        failureRedirect : '/login', // redirect back to the signup page if there is an error
+        failureFlash : true // allow flash messages
+    }));
 };
 
 // route middleware to make sure a user is logged in
