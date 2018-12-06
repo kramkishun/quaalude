@@ -26,16 +26,20 @@ app.get('/tsdata/:sym', (req, res) => {
   // TODO: replace with fetch or axios - this pattern is terrible for readability.
   request(pickleRisk, ((symbol, responseObj) => {
     return (pErr, pReq, pBody) => {
-      if (pErr) {
-        console.log (pErr);
-        console.log ("Could not retrieve data from pickleRisk for: " + symbol);
-        return;
+      try {
+        if (pErr) {
+          console.log (pErr);
+          console.log ("Could not retrieve data from pickleRisk for: " + symbol);
+          return;
+        }
+    
+        console.log ("Received data from pickleRisk for " + req.params.sym);
+    
+        datesAndCloses = JSON.parse(pBody);
+        responseObj.json(datesAndCloses);
+      } catch (e) {
+        console.log(e);
       }
-  
-      console.log ("Received data from pickleRisk for " + req.params.sym);
-  
-      datesAndCloses = JSON.parse(pBody);
-      responseObj.json(datesAndCloses);
     }
   })(req.params.sym, res));
 });
@@ -49,14 +53,18 @@ app.get('/multitsdata', (req, res) => {
 
   request(pickleRisk, ((symbols, responseObj) => {
     return (pErr, pReq, pBody) => {
-      if (pErr) {
-        console.log (pErr);
-        console.log ("Could not retrieve data from pickleRisk for: " + symbols);
-        return;
-      }
+      try {
+        if (pErr) {
+          console.log (pErr);
+          console.log ("Could not retrieve data from pickleRisk for: " + symbols);
+          return;
+        }
 
-      console.log('Received multidata from pickleRisk for ' + symbols);
-      responseObj.json(JSON.parse(pBody))
+        console.log('Received multidata from pickleRisk for ' + symbols);
+        responseObj.json(JSON.parse(pBody))
+      } catch (e) {
+        console.log(e);
+      }
     }
   })(req.query.symbols, res));
 });
@@ -68,14 +76,18 @@ app.get('/returndata/:sym', (req, res) => {
 
   request(pickleRisk, ((symbols, responseObj) => {
     return (pErr, pReq, pBody) => {
-      if (pErr) {
-        console.log (pErr);
-        console.log ("Could not retrieve return data from pickleRisk for: " + symbols);
-        return;
-      }
+      try {
+        if (pErr) {
+          console.log (pErr);
+          console.log ("Could not retrieve return data from pickleRisk for: " + symbols);
+          return;
+        }
 
-      console.log('Received return from pickleRisk for ' + symbols);
-      responseObj.json(JSON.parse(pBody))
+        console.log('Received return from pickleRisk for ' + symbols);
+        responseObj.json(JSON.parse(pBody))
+      } catch (e) {
+        console.log(e);
+      }
     }
   })(req.params.sym, res));
 });
