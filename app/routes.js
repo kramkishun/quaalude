@@ -51,33 +51,30 @@ module.exports = function(app, passport) {
         })(req.query.symbols, res));
     });
 
+    app.get('/returndata/:sym', (req, res) => {
+        console.log ('Return Request')
+      
+        const pickleRisk = 'http://localhost:5000/returns/' + req.params.sym;
+      
+        request(pickleRisk, ((symbols, responseObj) => {
+          return (pErr, pReq, pBody) => {
+            if (pErr) {
+              console.log (pErr);
+              console.log ("Could not retrieve return data from pickleRisk for: " + symbols);
+              return;
+            }
+      
+            console.log('Received return from pickleRisk for ' + symbols);
+            responseObj.json(JSON.parse(pBody))
+          }
+        })(req.params.sym, res));
+      });
 
-    // =====================================
-    // LOGIN ===============================
-    // =====================================
-    // show the login form
-    app.get('/login', function(req, res) {
-
-        // render the page and pass in any flash data if it exists
-        res.render('login.ejs', { message: req.flash('loginMessage') }); 
-    });
-
-    // process the login form
-    // app.post('/login', do all our passport stuff here);
-
-    // =====================================
-    // SIGNUP ==============================
-    // =====================================
-    // show the signup form
-    app.get('/signup', function(req, res) {
-
-        // render the page and pass in any flash data if it exists
-        //res.render('signup.ejs', { message: req.flash('signupMessage') });
-    });
+    
 
     // process the signup form
     app.post('/signup', passport.authenticate('local-signup', {
-        successRedirect : 'http://localhost:3002/', // redirect to the secure profile section
+        successRedirect : 'http://localhost:3000/', // redirect to the secure profile section
         failureRedirect : 'http://localhost:3002/', // redirect back to the signup page if there is an error
         failureFlash : true // allow flash messages
     }));
