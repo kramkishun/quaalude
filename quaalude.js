@@ -4,6 +4,7 @@ const PORT = process.env.PORT || 3001;
 var mongoose = require('mongoose');
 var passport = require('passport');
 var flash    = require('connect-flash');
+var cors     = require('cors');
 
 var morgan       = require('morgan');
 var cookieParser = require('cookie-parser');
@@ -27,7 +28,7 @@ app.use(bodyParser()); // get information from html forms
 
 // launch with:
 // > node quaalude.js
-
+//app.use(cors);
 app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
@@ -37,6 +38,7 @@ app.use(function(req, res, next) {
 // required for passport
 app.use(session({ secret: 'MethaqualoneMandraxQuinazolinone' })); // session secret
 app.use(passport.initialize());
+//todo Remove use tokens
 app.use(passport.session()); // persistent login sessions
 app.use(flash()); // use connect-flash for flash messages stored in session
 

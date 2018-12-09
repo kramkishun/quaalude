@@ -1,6 +1,10 @@
 // app/routes.js
 let request = require('request')
+// load up the user model
+var User    = require('../app/models/users');
+const jwt   = require('jsonwebtoken');
 
+//todo.. each of these routes should be there own file with express.routs
 module.exports = function(app, passport) {
 
 
@@ -38,15 +42,19 @@ module.exports = function(app, passport) {
         const pickleRisk = 'http://localhost:5000/multihistory?symbols=' + req.query.symbols;
 
         request(pickleRisk, ((symbols, responseObj) => {
-            return (pErr, pReq, pBody) => {
+            try {
                 if (pErr) {
-                    console.log (pErr);
-                    console.log ("Could not retrieve data from pickleRisk for: " + symbols);
-                    return;
+                  console.log (pErr);
+                  console.log ("Could not retrieve data from pickleRisk for: " + symbol);
+                  return;
                 }
-
-                console.log('Received multidata from pickleRisk for ' + symbols);
-                responseObj.json(JSON.parse(pBody))
+            
+                console.log ("Received data from pickleRisk for " + req.params.sym);
+            
+                datesAndCloses = JSON.parse(pBody);
+                responseObj.json(datesAndCloses);
+            } catch (e) {
+                console.log(e);
             }
         })(req.query.symbols, res));
     });
@@ -76,9 +84,45 @@ module.exports = function(app, passport) {
     app.post('/signup', passport.authenticate('local-signup', {
         successRedirect : 'http://localhost:3000/', // redirect to the secure profile section
         failureRedirect : 'http://localhost:3002/', // redirect back to the signup page if there is an error
-        failureFlash : true // allow flash messages
+        failureFlash : true, // allow flash messages
+        session: true
     }));
 
+    /* POST login. */
+    app.post('/auth', passport.authenticate(  
+      'local-login', {
+        session: false
+      }), serialize, generateToken, respond);
+
+    function serialize(req, res, next) {  
+            console.log('serialize');
+            // we store the updated information in req.user again
+            req.user = {
+                id: req.user.id
+              };
+            next();
+    }
+
+    function generateToken(req, res, next) {  
+        req.token = jwt.sign({
+          id: req.user.id,
+        }, 'server secret', {expiresIn: "120m"});
+        next();
+      }
+
+      function respond(req, res) {  
+        res.status(200).json({
+          user: req.user,
+          token: req.token
+        });
+      }      
+
+
+    const expressJwt = require('express-jwt');  
+    const authenticate = expressJwt({secret : 'server secret'});
+    app.get('/me', authenticate, function(req, res) {  
+    res.status(200).json(req.user);
+    });
     // =====================================
     // PROFILE SECTION =====================
     // =====================================
@@ -88,6 +132,28 @@ module.exports = function(app, passport) {
         res.render('profile.ejs', {
             user : req.user // get the user out of session and pass to template
         });
+    });
+
+    app.post('/addStock', authenticate, function(req, res){
+        var sym = req.query.sym;
+        var amount = req.query.amount;
+        console.log("adding "+ sym );
+        console.log("user id:"+req.user.id);
+        User.findByIdAndUpdate(req.user.id, 
+            {$push: {stocks: { "symble": sym, "amount": amount }}},
+            {safe: true, upsert: true},
+            function(err,user) {
+            console.log("looking for user id"+ user);
+            if (err){
+            console.log("user not found ");
+                return done(err);
+            }
+            else {
+                console.log("user found ");
+                res.status(200);
+            }
+        })
+
     });
 
     // =====================================
