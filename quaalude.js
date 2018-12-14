@@ -4,21 +4,37 @@ const express = require('express');
 const app = express();
 const port = 3001;
 
+let mongoose = require('mongoose');
+let News = require('./models/news');
+let Stats = require('./models/stats');
 
 // launch with:
 // > node quaalude.js
 
+// Connection to Mongo
+let initializeMongoose = () => {
+  mongoose.connect('mongodb://localhost:27017/pickleRisk', { useNewUrlParser: true} );
+  let db = mongoose.connection;
+  db.on('error', console.error.bind(console, 'connection error: '));
+  db.once('open', () => {
+    console.log('Connected to MongoDB through Mongoose');
+  });
+};
+
+initializeMongoose();
+
+// Allow CORS
 app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
 });
 
+
+// Endpoints
 app.get('/', (req, res) => res.send('Check out /tsdata'));
 
 // TODO: very repetitive from when proving out - refactor to remove duplicate code
-
-// Right now just serving as a pass through
 app.get('/tsdata/:sym', (req, res) => {
 
   const pickleRisk = 'http://localhost:5000/history/' + req.params.sym;
@@ -43,8 +59,6 @@ app.get('/tsdata/:sym', (req, res) => {
     }
   })(req.params.sym, res));
 });
-
-// BUG: any kind of unexpected response (e.g. HTML) causes crashes.
 
 app.get('/multitsdata', (req, res) => {
   console.log ('Multi Symbol Request')
@@ -91,5 +105,22 @@ app.get('/returndata/:sym', (req, res) => {
     }
   })(req.params.sym, res));
 });
+
+app.get('/stats/:sym', (req, res) => {
+  console.log ('Stats Request')
+  Stats.find({ symbol: req.params.sym }).sort({dateLastRefreshed:-1}).limit(1).exec( (err, allStats) => { 
+    if (err) return console.error(err);
+    res.json(allStats[0]);
+  });
+});
+
+app.get('/news/:sym', (req, res) => {
+  console.log ('News Request')
+  News.find({ symbol: req.params.sym }).sort({dateLastRefreshed:-1}).limit(1).exec( (err, allNews) => { 
+    if (err) return console.error(err);
+    res.json(allNews[0]);
+  });
+});
+
 
 app.listen(port, () => console.log(`Quaalude launched on port ${port}!`));
