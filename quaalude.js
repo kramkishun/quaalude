@@ -9,7 +9,6 @@ var cors     = require('cors');
 var morgan       = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser   = require('body-parser');
-var session      = require('express-session');
 
 
 var configDB = require('./config/database.js');
@@ -28,18 +27,12 @@ app.use(bodyParser()); // get information from html forms
 
 // launch with:
 // > node quaalude.js
-//app.use(cors);
-app.use(function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  next();
-});
+app.use(cors());
 
 // required for passport
-app.use(session({ secret: 'MethaqualoneMandraxQuinazolinone' })); // session secret
+//app.use(session({ secret: 'MethaqualoneMandraxQuinazolinone' })); // session secret
 app.use(passport.initialize());
-//todo Remove use tokens
-app.use(passport.session()); // persistent login sessions
+//TODO: not useing session should remove
 app.use(flash()); // use connect-flash for flash messages stored in session
 
 // routes ======================================================================

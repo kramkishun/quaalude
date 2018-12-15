@@ -2,7 +2,13 @@
 let request = require('request')
 // load up the user model
 var User    = require('../app/models/users');
+var Portfoilo = require('../app/models/portfolio');
 const jwt   = require('jsonwebtoken');
+
+var secret = require('../config/settings.js');
+
+const expressJwt = require('express-jwt');  
+const authenticate = expressJwt(secret);
 
 //todo.. each of these routes should be there own file with express.routs
 module.exports = function(app, passport) {
@@ -106,7 +112,7 @@ module.exports = function(app, passport) {
     function generateToken(req, res, next) {  
         req.token = jwt.sign({
           id: req.user.id,
-        }, 'server secret', {expiresIn: "120m"});
+        }, secret.secret , {expiresIn: "120m"});
         next();
       }
 
@@ -118,8 +124,7 @@ module.exports = function(app, passport) {
       }      
 
 
-    const expressJwt = require('express-jwt');  
-    const authenticate = expressJwt({secret : 'server secret'});
+
     app.get('/me', authenticate, function(req, res) {  
     res.status(200).json(req.user);
     });
@@ -134,12 +139,54 @@ module.exports = function(app, passport) {
         });
     });
 
+    app.post('/createPortfolio', authenticate, function(req,res){
+
+        var newPortfolio = new Portfoilo();
+
+        // set the user's local credentials
+        newPortfolio.name    = req.query.name;
+        newPortfolio.createdBy = req.user.id;
+
+        // save the portfolio
+        newPortfolio.save(function(err) {
+            if (err){
+                console.log(err)
+                throw err;
+            }
+            res.status(200).json({Status: 'Portfolio added '});
+        });
+        
+    });
+
     app.post('/addStock', authenticate, function(req, res){
         var sym = req.query.sym;
         var amount = req.query.amount;
+        var ID = req.query.portfolioID
         console.log("adding "+ sym );
         console.log("user id:"+req.user.id);
-        User.findByIdAndUpdate(req.user.id, 
+        console.log("portfolio ID:" + ID);
+        Portfoilo.findById(ID).
+            populate('createdBy').exec(function (err, portfoilo)
+           {
+               if(err){
+                   console.log("no user associated with this portfoio");
+                   return done(err);
+               }
+               if(portfoilo.createdBy._id == req.user.id)
+               {
+                   //add stock
+                   var stock = {symble: sym,amount: amount};
+                   portfoilo.stocks.push(stock);
+                   portfoilo.save(function(err) {
+                    if (err){
+                        console.log(err)
+                        throw err;
+                    }
+                    res.status(200).json({Status: 'Portfolio added '});
+                });
+               }
+           });
+/*         User.findByIdAndUpdate(req.user.id, 
             {$push: {stocks: { "symble": sym, "amount": amount }}},
             {safe: true, upsert: true},
             function(err,user) {
@@ -150,9 +197,9 @@ module.exports = function(app, passport) {
             }
             else {
                 console.log("user found ");
-                res.status(200);
+                res.status(200).json({status: "UPDATED"});
             }
-        })
+        }) */
 
     });
 
