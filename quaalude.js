@@ -41,4 +41,11 @@ let initializeMongoose = () => {
 
 initializeMongoose();
 // launch ======================================================================
-app.listen(PORT, () => console.log(`Quaalude launched on port ${PORT}!`));
+let server = app.listen(PORT, () => console.log(`Quaalude launched on port ${PORT}!`));
+
+// Exports for testing
+module.exports = server;
+module.exports.stop = () => { 
+  server.close(); 
+  mongoose.connection.close(); 
+} 

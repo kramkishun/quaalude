@@ -4,7 +4,8 @@
   "description": "Backend for Financial data analysis app",
   "main": "quaalude.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "nodemon quaalude.js",
+    "test": "mocha --timeout 10000 --exit tests"
   },
   "author": "kr",
   "license": "ISC",
@@ -21,7 +22,6 @@
     "mongodb": "^3.1.10",
     "mongoose": "^5.3.16",
     "morgan": "^1.9.1",
-    "nodemon": "^1.18.9",
     "package.json": "^2.0.1",
     "passport": "~0.3.2",
     "passport-facebook": "~2.1.1",
@@ -30,5 +30,12 @@
     "passport-local": "~1.0.0",
     "passport-twitter": "~1.0.4",
     "request": "^2.88.0"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "chai-http": "^4.2.0",
+    "mocha": "^5.2.0",
+    "nodemon": "^1.18.9",
+    "supertest": "^3.3.0"
   }
 }

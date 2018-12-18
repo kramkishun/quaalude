@@ -9,7 +9,7 @@ module.exports = function(passport) {
     routes.use('/tsdata', tsdata);
 
     const multidata = require('./multidata');
-    routes.use('/multidata', multidata);
+    routes.use('/multitsdata', multidata);
 
     const returndata = require('./returndata');
     routes.use('/returndata', returndata);
