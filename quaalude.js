@@ -1,19 +1,37 @@
-let request = require('request')
-
 const express = require('express');
 const app = express();
-const port = 3001;
+const PORT = process.env.PORT || 3001;
+var mongoose = require('mongoose');
+var passport = require('passport');
+var cors     = require('cors');
 
-let mongoose = require('mongoose');
-let News = require('./models/news');
-let Stats = require('./models/stats');
+var morgan       = require('morgan');
+var bodyParser   = require('body-parser');
 
-// launch with:
-// > node quaalude.js
+
+var configDB = require('./config/database.js');
+
+require('./config/passport')(passport); // pass passport for configuration
+
+// set up our express application
+app.use(morgan('dev')); // log every request to the console
+
+app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.json())
+
+app.use(cors());
+
+app.use(passport.initialize());
+
+
+// routes ======================================================================
+const routes = require('./app/routes');
+require('./app/routesOld.js')(app, passport); // load our routes and pass in our app and fully configured passport
+app.use('/', routes(passport));
 
 // Connection to Mongo
 let initializeMongoose = () => {
-  mongoose.connect('mongodb://localhost:27017/pickleRisk', { useNewUrlParser: true} );
+  mongoose.connect(configDB.url,configDB.options);
   let db = mongoose.connection;
   db.on('error', console.error.bind(console, 'connection error: '));
   db.once('open', () => {
@@ -22,105 +40,5 @@ let initializeMongoose = () => {
 };
 
 initializeMongoose();
-
-// Allow CORS
-app.use(function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  next();
-});
-
-
-// Endpoints
-app.get('/', (req, res) => res.send('Check out /tsdata'));
-
-// TODO: very repetitive from when proving out - refactor to remove duplicate code
-app.get('/tsdata/:sym', (req, res) => {
-
-  const pickleRisk = 'http://localhost:5000/history/' + req.params.sym;
-
-  // TODO: replace with fetch or axios - this pattern is terrible for readability.
-  request(pickleRisk, ((symbol, responseObj) => {
-    return (pErr, pReq, pBody) => {
-      try {
-        if (pErr) {
-          console.log (pErr);
-          console.log ("Could not retrieve data from pickleRisk for: " + symbol);
-          return;
-        }
-    
-        console.log ("Received data from pickleRisk for " + req.params.sym);
-    
-        datesAndCloses = JSON.parse(pBody);
-        responseObj.json(datesAndCloses);
-      } catch (e) {
-        console.log(e);
-      }
-    }
-  })(req.params.sym, res));
-});
-
-app.get('/multitsdata', (req, res) => {
-  console.log ('Multi Symbol Request')
-
-  const pickleRisk = 'http://localhost:5000/multihistory?symbols=' + req.query.symbols;
-
-  request(pickleRisk, ((symbols, responseObj) => {
-    return (pErr, pReq, pBody) => {
-      try {
-        if (pErr) {
-          console.log (pErr);
-          console.log ("Could not retrieve data from pickleRisk for: " + symbols);
-          return;
-        }
-
-        console.log('Received multidata from pickleRisk for ' + symbols);
-        responseObj.json(JSON.parse(pBody))
-      } catch (e) {
-        console.log(e);
-      }
-    }
-  })(req.query.symbols, res));
-});
-
-app.get('/returndata/:sym', (req, res) => {
-  console.log ('Return Request')
-
-  const pickleRisk = 'http://localhost:5000/returns/' + req.params.sym;
-
-  request(pickleRisk, ((symbols, responseObj) => {
-    return (pErr, pReq, pBody) => {
-      try {
-        if (pErr) {
-          console.log (pErr);
-          console.log ("Could not retrieve return data from pickleRisk for: " + symbols);
-          return;
-        }
-
-        console.log('Received return from pickleRisk for ' + symbols);
-        responseObj.json(JSON.parse(pBody))
-      } catch (e) {
-        console.log(e);
-      }
-    }
-  })(req.params.sym, res));
-});
-
-app.get('/stats/:sym', (req, res) => {
-  console.log ('Stats Request')
-  Stats.find({ symbol: req.params.sym }).sort({dateLastRefreshed:-1}).limit(1).exec( (err, allStats) => { 
-    if (err) return console.error(err);
-    res.json(allStats[0]);
-  });
-});
-
-app.get('/news/:sym', (req, res) => {
-  console.log ('News Request')
-  News.find({ symbol: req.params.sym }).sort({dateLastRefreshed:-1}).limit(1).exec( (err, allNews) => { 
-    if (err) return console.error(err);
-    res.json(allNews[0]);
-  });
-});
-
-
-app.listen(port, () => console.log(`Quaalude launched on port ${port}!`));
+// launch ======================================================================
+app.listen(PORT, () => console.log(`Mandrax launched on port ${PORT}!`));
