@@ -41,4 +41,4 @@ let initializeMongoose = () => {
 
 initializeMongoose();
 // launch ======================================================================
-app.listen(PORT, () => console.log(`Mandrax launched on port ${PORT}!`));
+app.listen(PORT, () => console.log(`Quaalude launched on port ${PORT}!`));
