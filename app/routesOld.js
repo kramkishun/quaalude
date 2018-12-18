@@ -29,10 +29,19 @@ module.exports = function(app, passport) {
     }));
 
     /* POST login. */
-    app.post('/auth', passport.authenticate(  
-      'local-login', {
-        session: false
-      }), serialize, generateToken, respond);
+    app.post('/auth'
+    ,function(req,res,next)
+    {
+            passport.authenticate( 'local-login'
+            , {session: false}
+            ,function(err, user, info){
+                if (err) {return next(err);}
+                if (! user) {return res.status(401).send({ success : false, message : info.message });}
+                console.log("user found");
+                req.user = user;
+                next()
+            })(req,res,next)
+    }, serialize, generateToken, respond);
 
     function serialize(req, res, next) {  
             console.log('serialize');
