@@ -1,4 +1,6 @@
 const routes = require('express').Router();
+const loginMW = require('./logonMiddleware');
+
 module.exports = function(passport) {
 
     routes.get('/', (req, res) => {
@@ -19,6 +21,18 @@ module.exports = function(passport) {
 
     const news = require('./news');
     routes.use('/news', news);
+
+    const logon = require('./logon')(passport);
+    routes.use('/logon', logon);
+    routes.use('/logon', loginMW.serialize);
+    routes.use('/logon', loginMW.generateToken);
+    routes.use('/logon', loginMW.respond);
+
+    const signup = require('./signup')(passport);
+    routes.use('/signup', signup);
+    routes.use('/signup', loginMW.serialize);
+    routes.use('/signup', loginMW.generateToken);
+    routes.use('/signup', loginMW.respond);
 
     return routes;
 }
