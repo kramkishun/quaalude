@@ -8,6 +8,11 @@ var cors     = require('cors');
 var morgan       = require('morgan');
 var bodyParser   = require('body-parser');
 
+// Run with (nodemon):
+// > npm start
+//
+// Run tests and coverage with
+// > npm test
 
 var configDB = require('./config/database.js');
 

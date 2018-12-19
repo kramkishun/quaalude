@@ -6,6 +6,8 @@ let should = chai.should();
 
 chai.use(chaiHttp);
 
+// Note that the Python flask app must be running for some of these tests to pass,
+// otherwise timeouts will occur.
 describe ('Test All Routes', () => {
     
     describe ('Test root /', () => {
