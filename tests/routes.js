@@ -9,24 +9,54 @@ chai.use(chaiHttp);
 describe ('Test All Routes', () => {
     
     describe ('Test root /', () => {
-        it ('... should respond to the GET method', (done) => {
-            chai.request(app)
-                .get('/')
-                .end ((err, res) => {
-                    res.should.have.status(200);
-                });
-                done();
+        it ('... should respond to the GET method', async () => {
+            let response = await chai.request(app).get('/');
+            response.should.have.status(200);
         });
     });
 
-    describe ('Test tsdata/', () => {
-        it ('... should respond to the GET method', (done) => {
-            chai.request(app)
-                .get('tsdata/')
-                .end ((err, res) => {
-                    res.should.have.status(200);
-                });
-                done();
+    describe ('Test /tsdata/', () => {
+        it ('... should respond to the GET method', async () => {
+            let response = await chai.request(app).get('/tsdata/AAPL');
+            response.should.have.status(200);
+        });
+
+        it ('... should respond when a bad symbol is provided', async () => {
+            let response = await chai.request(app).get('/tsdata/DOESNTEXIST');
+            response.should.have.status(200);
+        });
+
+        it ('... should respond with an error when a bad symbol is provided', async () => {
+            let response = await chai.request(app).get('/tsdata/DOESNTEXIST');
+            response.body.should.be.eql(JSON.parse('{"error":"NoSuchSymbol"}'));
+        });
+    });
+
+    describe ('Test /multitsdata/', () => {
+        it ('... should respond to the GET method', async () => {
+            let response = await chai.request(app).get('/multitsdata?symbols=AAPL');
+            response.should.have.status(200);
+        });
+    });
+
+    describe ('Test /news/', () => {
+        it ('... should respond to the GET method', async () => {
+            let response = await chai.request(app).get('/news/AAPL');
+            response.should.have.status(200);
+        });
+    });
+
+    describe ('Test /returndata/', () => {
+        it ('... should respond to the GET method', async () => {
+            let response = await chai.request(app).get('/returndata/AAPL');
+            response.should.have.status(200);
+        });
+    });
+
+    describe ('Test /stats/', () => {
+        it ('... should respond to the GET method', async () => {
+            let response = await chai.request(app).get('/stats/AAPL');
+            response.should.have.status(200);
         });
     });
 
