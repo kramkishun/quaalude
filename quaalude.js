@@ -8,6 +8,11 @@ var cors     = require('cors');
 var morgan       = require('morgan');
 var bodyParser   = require('body-parser');
 
+// Run with (nodemon):
+// > npm start
+//
+// Run tests and coverage with
+// > npm test
 
 var configDB = require('./config/database.js');
 
@@ -41,4 +46,11 @@ let initializeMongoose = () => {
 
 initializeMongoose();
 // launch ======================================================================
-app.listen(PORT, () => console.log(`Mandrax launched on port ${PORT}!`));
+let server = app.listen(PORT, () => console.log(`Quaalude launched on port ${PORT}!`));
+
+// Exports for testing
+module.exports = server;
+module.exports.stop = () => { 
+  server.close(); 
+  mongoose.connection.close(); 
+} 
