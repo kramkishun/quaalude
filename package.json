@@ -5,7 +5,7 @@
   "main": "quaalude.js",
   "scripts": {
     "start": "nodemon quaalude.js",
-    "test": "mocha --timeout 10000 --exit tests"
+    "test": "nyc mocha --timeout 10000 --exit tests"
   },
   "author": "kr",
   "license": "ISC",
@@ -36,6 +36,7 @@
     "chai-http": "^4.2.0",
     "mocha": "^5.2.0",
     "nodemon": "^1.18.9",
+    "nyc": "^13.1.0",
     "supertest": "^3.3.0"
   }
 }
