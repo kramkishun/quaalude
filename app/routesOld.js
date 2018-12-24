@@ -26,7 +26,7 @@ module.exports = function(app, passport) {
     });
 
     app.get('/portfolio', authenticate, function(req, res) {
-        Portfolio.find({},function(err,portfolios)
+        Portfolio.find({createdBy: req.user.id},function(err,portfolios)
         {
         //    var portfolioMap = {};
 
