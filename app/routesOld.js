@@ -29,7 +29,6 @@ module.exports = function(app, passport) {
         Portfolio.find({createdBy: req.user.id},function(err,portfolios)
         {
         //    var portfolioMap = {};
-
         //    portfolios.forEach(function(portfolio) {
         //        portfolioMap[portfolio.name] = portfolio;
         //    });
@@ -38,15 +37,15 @@ module.exports = function(app, passport) {
         });
     });
 
-    app.put('/Portfolio:name', authenticate, function(req,res){
+    app.post('/Portfolio', authenticate, function(req,res){
 
         var newPortfolio = new Portfolio();
 
 
         // set the user's local credentials
-        newPortfolio.name    = req.params.name;
+        newPortfolio.name    = req.body.name;
         newPortfolio.createdBy = req.user.id;
-
+        console.log(newPortfolio)
         // save the portfolio
         newPortfolio.save(function(err) {
             if (err){
@@ -57,6 +56,12 @@ module.exports = function(app, passport) {
         });
         
     });
+
+    app.delete('/portfolio', authenticate, function(req,res) {
+        Portfolio.findByIdAndRemove(req.body.id,function(err,portfolio){
+            res.status(200).json({Status: 'Portfolio deleted'});
+        })
+    })
 
     app.post('/addStock', authenticate, function(req, res)
     {
