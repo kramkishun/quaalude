@@ -4,7 +4,7 @@ let request = require('request')
 let News = require('./models/news');
 
 
-var Portfoilo = require('./models/portfolio');
+var Portfolio = require('./models/portfolio');
 const jwt   = require('jsonwebtoken');
 
 var secret = require('../config/settings.js');
@@ -25,15 +25,27 @@ module.exports = function(app, passport) {
         res.status(200).json(req.user);
     });
 
+    app.get('/portfolio', authenticate, function(req, res) {
+        Portfolio.find({createdBy: req.user.id},function(err,portfolios)
+        {
+        //    var portfolioMap = {};
+        //    portfolios.forEach(function(portfolio) {
+        //        portfolioMap[portfolio.name] = portfolio;
+        //    });
+        
+            res.send(portfolios); 
+        });
+    });
 
-    app.put('/Portfolio:name', authenticate, function(req,res){
+    app.post('/Portfolio', authenticate, function(req,res){
 
-        var newPortfolio = new Portfoilo();
+        var newPortfolio = new Portfolio();
+
 
         // set the user's local credentials
-        newPortfolio.name    = req.params.name;
+        newPortfolio.name    = req.body.name;
         newPortfolio.createdBy = req.user.id;
-
+        console.log(newPortfolio)
         // save the portfolio
         newPortfolio.save(function(err) {
             if (err){
@@ -45,6 +57,12 @@ module.exports = function(app, passport) {
         
     });
 
+    app.delete('/portfolio', authenticate, function(req,res) {
+        Portfolio.findByIdAndRemove(req.body.id,function(err,portfolio){
+            res.status(200).json({Status: 'Portfolio deleted'});
+        })
+    })
+
     app.post('/addStock', authenticate, function(req, res)
     {
         var sym = req.query.sym;
@@ -53,19 +71,19 @@ module.exports = function(app, passport) {
         console.log("adding "+ sym );
         console.log("user id:"+req.user.id);
         console.log("portfolio ID:" + ID);
-        Portfoilo.findById(ID).
-            populate('createdBy').exec(function (err, portfoilo)
+        Portfolio.findById(ID).
+            populate('createdBy').exec(function (err, portfolio)
            {
                if(err){
                    console.log("no user associated with this portfoio");
                    return done(err);
                }
-               if(portfoilo.createdBy._id == req.user.id)
+               if(portfolio.createdBy._id == req.user.id)
                {
                    //add stock
                    var stock = {symble: sym,amount: amount};
-                   portfoilo.stocks.push(stock);
-                   portfoilo.save(function(err) {
+                   portfolio.stocks.push(stock);
+                   portfolio.save(function(err) {
                     if (err){
                         console.log(err)
                         throw err;
